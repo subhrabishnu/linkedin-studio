@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OrangeTree LinkedIn Content Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+  :root {
+    --navy: #1F3864; --navy-light: #2a4a82; --orange: #E8630A; --orange-light: #f07030;
+    --bg: #F5F7FA; --white: #ffffff; --text: #1a1a2e; --muted: #6b7280;
+    --border: #e2e8f0; --success: #059669; --canva: #8B5CF6;
+    --card-shadow: 0 4px 24px rgba(31,56,100,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .header {
+    background: var(--navy); padding: 18px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+  .header-brand { display: flex; align-items: center; gap: 12px; }
+  .header-logo {
+    width: 36px; height: 36px; background: var(--orange); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-weight: 700; font-size: 16px; color: white;
+  }
+  .header-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; color: white; }
+  .header-sub { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 1px; }
+  .header-badge {
+    background: rgba(232,99,10,0.2); border: 1px solid rgba(232,99,10,0.4);
+    color: #fbbf7a; font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px;
+  }
+
+  /* MODE SWITCHER */
+  .mode-switcher {
+    max-width: 1100px; margin: 24px auto 0; padding: 0 24px;
+    display: flex; gap: 8px;
+  }
+  .mode-btn {
+    padding: 10px 20px; border-radius: 10px; border: 2px solid var(--border);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: 'Inter', sans-serif; background: white; color: var(--muted);
+    display: flex; align-items: center; gap: 8px; transition: all 0.18s;
+  }
+  .mode-btn:hover { border-color: var(--navy); color: var(--navy); }
+  .mode-btn.active { background: var(--navy); border-color: var(--navy); color: white; }
+  .mode-btn.canva-mode.active { background: var(--canva); border-color: var(--canva); }
+  .mode-btn .mode-icon { font-size: 16px; }
+
+  .main {
+    max-width: 1100px; margin: 16px auto 0; padding: 0 24px 32px;
+    display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start;
+  }
+  .card { background: var(--white); border-radius: 14px; box-shadow: var(--card-shadow); overflow: hidden; }
+  .card-header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    padding: 18px 24px; color: white;
+  }
+  .card-header.canva-header { background: linear-gradient(135deg, #6d28d9 0%, #8B5CF6 100%); }
+  .card-header h2 { font-size: 14px; font-weight: 600; letter-spacing: 0.3px; }
+  .card-header p { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 3px; }
+  .card-body { padding: 24px; }
+
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 600; color: var(--navy);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .field label.canva-label { color: #6d28d9; }
+  .field input, .field textarea, .field select {
+    width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif;
+    color: var(--text); background: var(--bg);
+    transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    border-color: var(--navy); box-shadow: 0 0 0 3px rgba(31,56,100,0.08); background: white;
+  }
+  .field input.canva-input:focus { border-color: var(--canva); box-shadow: 0 0 0 3px rgba(139,92,246,0.1); }
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+  .type-btn {
+    padding: 10px 8px; border: 1.5px solid var(--border); border-radius: 8px;
+    background: var(--bg); cursor: pointer; text-align: center;
+    font-size: 12px; font-weight: 500; color: var(--muted);
+    transition: all 0.18s; font-family: 'Inter', sans-serif;
+  }
+  .type-btn:hover { border-color: var(--navy); color: var(--navy); background: white; }
+  .type-btn.active { border-color: var(--navy); background: var(--navy); color: white; }
+  .type-btn .type-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+
+  .tone-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tone-pill {
+    padding: 5px 12px; border: 1.5px solid var(--border); border-radius: 20px;
+    font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    font-family: 'Inter', sans-serif; color: var(--muted); background: var(--bg);
+  }
+  .tone-pill:hover { border-color: var(--orange); color: var(--orange); }
+  .tone-pill.active { background: var(--orange); border-color: var(--orange); color: white; }
+
+  .btn-generate {
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-light) 100%);
+    color: white; border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.3px;
+    transition: opacity 0.2s, transform 0.1s; margin-top: 4px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-generate.btn-canva {
+    background: linear-gradient(135deg, #6d28d9 0%, #8B5CF6 100%);
+  }
+  .btn-generate:hover { opacity: 0.92; }
+  .btn-generate:active { transform: scale(0.99); }
+  .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* CANVA LINK INPUT */
+  .canva-link-box {
+    position: relative;
+  }
+  .canva-link-box input {
+    padding-left: 40px;
+  }
+  .canva-link-icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    font-size: 16px; pointer-events: none;
+  }
+  .canva-status {
+    margin-top: 8px; padding: 10px 14px; border-radius: 8px;
+    font-size: 12px; font-weight: 500; display: none;
+  }
+  .canva-status.info { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; display: block; }
+  .canva-status.success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; display: block; }
+  .canva-status.error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
+
+  /* TEMPLATE PREVIEW */
+  .template-preview {
+    margin-bottom: 18px; padding: 14px; border-radius: 10px;
+    background: #faf5ff; border: 1.5px solid #c4b5fd; display: none;
+  }
+  .template-preview.show { display: block; }
+  .template-name { font-size: 13px; font-weight: 700; color: #5b21b6; margin-bottom: 4px; }
+  .template-meta { font-size: 11px; color: var(--muted); }
+  .template-slides { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .slide-pill {
+    padding: 3px 8px; background: #ede9fe; border-radius: 12px;
+    font-size: 10px; font-weight: 600; color: #6d28d9;
+  }
+
+  /* OUTPUT */
+  .output-card { position: relative; }
+  .output-top { padding: 20px 24px 0; display: flex; align-items: center; justify-content: space-between; }
+  .output-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--navy); }
+  .output-actions { display: flex; gap: 8px; }
+  .btn-action {
+    padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+    border: 1.5px solid var(--border); background: white; color: var(--navy); transition: all 0.15s;
+  }
+  .btn-action:hover { border-color: var(--navy); background: var(--navy); color: white; }
+  .btn-copy { border-color: var(--orange); color: var(--orange); }
+  .btn-copy:hover { background: var(--orange); border-color: var(--orange); color: white; }
+  .btn-canva-open { border-color: var(--canva); color: var(--canva); }
+  .btn-canva-open:hover { background: var(--canva); border-color: var(--canva); color: white; }
+
+  .post-preview {
+    margin: 16px 24px 0; background: #f9fafb;
+    border: 1.5px solid var(--border); border-radius: 10px; overflow: hidden;
+  }
+  .preview-header {
+    padding: 14px 16px; display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border); background: white;
+  }
+  .preview-avatar {
+    width: 40px; height: 40px; background: var(--navy); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-weight: 700; font-size: 16px; color: white; flex-shrink: 0;
+  }
+  .preview-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .preview-title { font-size: 11px; color: var(--muted); }
+  .linkedin-badge { margin-left: auto; background: #0077b5; color: white; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
+  .post-content { padding: 16px; font-size: 13.5px; line-height: 1.7; color: var(--text); white-space: pre-wrap; min-height: 200px; font-family: 'Inter', sans-serif; }
+
+  .empty-state { padding: 60px 24px; text-align: center; }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+  .empty-title { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
+  .empty-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  .loading-state { padding: 60px 24px; text-align: center; }
+  .spinner {
+    width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--navy);
+    border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+  }
+  .spinner.purple { border-top-color: var(--canva); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: var(--muted); }
+
+  .meta-row {
+    padding: 12px 24px; display: flex; gap: 16px; flex-wrap: wrap;
+    border-top: 1px solid var(--border); background: white; margin-top: 0;
+  }
+  .meta-item { font-size: 11px; color: var(--muted); }
+  .meta-item strong { color: var(--navy); }
+
+  /* CAROUSEL SLIDES */
+  .carousel-output { padding: 16px 24px; }
+  .slide {
+    border: 1.5px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 10px; background: white;
+  }
+  .slide.canva-slide { border-color: #c4b5fd; background: #faf5ff; }
+  .slide-num { font-size: 10px; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .slide-num.purple { color: var(--canva); }
+  .slide-text { font-size: 13px; line-height: 1.6; color: var(--text); white-space: pre-wrap; }
+
+  .canva-cta-banner {
+    margin: 12px 24px; padding: 14px 16px;
+    background: linear-gradient(135deg, #ede9fe, #faf5ff);
+    border: 1.5px solid #c4b5fd; border-radius: 10px;
+    display: none; align-items: center; gap: 12px;
+  }
+  .canva-cta-banner.show { display: flex; }
+  .canva-cta-text { flex: 1; font-size: 12px; color: #5b21b6; line-height: 1.5; }
+  .canva-cta-text strong { display: block; margin-bottom: 2px; font-size: 13px; }
+  .btn-open-canva {
+    padding: 8px 16px; background: #6d28d9; color: white;
+    border: none; border-radius: 8px; font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap;
+    text-decoration: none; display: inline-block;
+  }
+  .btn-open-canva:hover { background: #5b21b6; }
+
+  .tabs { display: flex; padding: 0 24px; border-bottom: 1px solid var(--border); background: white; }
+  .tab {
+    padding: 12px 16px; font-size: 12px; font-weight: 600; color: var(--muted);
+    cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s;
+    font-family: 'Inter', sans-serif; background: none; border-left: none; border-right: none; border-top: none;
+  }
+  .tab:hover { color: var(--navy); }
+  .tab.active { color: var(--navy); border-bottom-color: var(--orange); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .history-list { padding: 16px 24px; }
+  .history-item {
+    padding: 12px 14px; border: 1.5px solid var(--border);
+    border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; background: white;
+  }
+  .history-item:hover { border-color: var(--navy); }
+  .history-item.canva-item { border-color: #c4b5fd; }
+  .history-item.canva-item:hover { border-color: var(--canva); }
+  .history-topic { font-size: 13px; font-weight: 600; color: var(--text); }
+  .history-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  .char-counter { text-align: right; font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .char-counter.warn { color: #f59e0b; }
+  .char-counter.over { color: #ef4444; }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; background: var(--success);
+    color: white; padding: 12px 20px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    transform: translateY(80px); transition: transform 0.3s ease; z-index: 100;
+  }
+  .toast.show { transform: translateY(0); }
+
+  /* MODE PANELS */
+  .mode-panel { display: none; }
+  .mode-panel.active { display: block; }
+
+  @media (max-width: 768px) { .main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <div class="header-logo">OT</div>
+    <div>
+      <div class="header-title">OrangeTree LinkedIn Studio</div>
+      <div class="header-sub">AI-powered content for Data Science, Analytics &amp; AI</div>
+    </div>
+  </div>
+  <div class="header-badge">⚡ Powered by Claude</div>
+</div>
+
+<!-- MODE SWITCHER -->
+<div class="mode-switcher">
+  <button class="mode-btn active" id="mode-write" onclick="switchMode('write')">
+    <span class="mode-icon">✍️</span> Write Content
+  </button>
+  <button class="mode-btn canva-mode" id="mode-canva" onclick="switchMode('canva')">
+    <span class="mode-icon">🎨</span> Fill Canva Template
+  </button>
+</div>
+
+<div class="main">
+
+  <!-- LEFT PANEL -->
+  <div>
+
+    <!-- WRITE MODE -->
+    <div class="mode-panel active card" id="panel-write">
+      <div class="card-header">
+        <h2>Content Brief</h2>
+        <p>Tell Claude what to write — done in seconds</p>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label>Content Type</label>
+          <div class="type-grid">
+            <button class="type-btn active" data-type="post" onclick="selectType(this)"><span class="type-icon">✍️</span>LinkedIn Post</button>
+            <button class="type-btn" data-type="carousel" onclick="selectType(this)"><span class="type-icon">🎠</span>Carousel Script</button>
+            <button class="type-btn" data-type="dm" onclick="selectType(this)"><span class="type-icon">💬</span>Cold DM</button>
+            <button class="type-btn" data-type="article" onclick="selectType(this)"><span class="type-icon">📄</span>Article Outline</button>
+            <button class="type-btn" data-type="comment" onclick="selectType(this)"><span class="type-icon">💡</span>Comment Reply</button>
+            <button class="type-btn" data-type="cta" onclick="selectType(this)"><span class="type-icon">🎯</span>CTA / Hook</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Topic or Idea</label>
+          <textarea id="topic" placeholder="e.g. Why most companies waste their data science investment..." rows="3"></textarea>
+        </div>
+        <div class="field" id="target-field">
+          <label>Target Audience</label>
+          <select id="audience">
+            <option value="CHROs and HR leaders in India">CHROs &amp; HR Leaders</option>
+            <option value="CEOs and business owners of mid-size Indian companies">CEOs &amp; Business Owners</option>
+            <option value="Data Science and Analytics professionals">Data Science Professionals</option>
+            <option value="L&D and Training Managers in India">L&amp;D / Training Managers</option>
+            <option value="QSR and F&B founders in India">QSR / F&amp;B Founders</option>
+            <option value="Fintech and BFSI leaders in India">Fintech / BFSI Leaders</option>
+            <option value="Startup founders and entrepreneurs in India">Startup Founders</option>
+            <option value="Corporate decision makers across India">General Corporate</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tone</label>
+          <div class="tone-row">
+            <button class="tone-pill active" data-tone="Direct and insightful" onclick="selectTone(this)">Direct</button>
+            <button class="tone-pill" data-tone="Conversational and warm" onclick="selectTone(this)">Conversational</button>
+            <button class="tone-pill" data-tone="Authoritative and data-driven" onclick="selectTone(this)">Authoritative</button>
+            <button class="tone-pill" data-tone="Provocative and contrarian" onclick="selectTone(this)">Provocative</button>
+            <button class="tone-pill" data-tone="Storytelling and personal" onclick="selectTone(this)">Storytelling</button>
+            <button class="tone-pill" data-tone="Educational and practical" onclick="selectTone(this)">Educational</button>
+          </div>
+        </div>
+        <div class="field" id="extra-field" style="display:none">
+          <label id="extra-label">Additional Context</label>
+          <textarea id="extra" placeholder="" rows="2"></textarea>
+        </div>
+        <div class="field">
+          <label>Include CTA?</label>
+          <select id="cta-select">
+            <option value="End with a thought-provoking question to drive comments">Question to drive comments</option>
+            <option value="End with a soft CTA to DM for OrangeTree's AI training programs">DM for AI training info</option>
+            <option value="End with a CTA to visit OrangeTree Global's website">Visit website</option>
+            <option value="End with a CTA to book a free AI readiness consultation">Book free consultation</option>
+            <option value="No explicit CTA — let the content speak for itself">No CTA</option>
+          </select>
+        </div>
+        <button class="btn-generate" id="gen-btn" onclick="generate()">
+          <span>⚡</span> Generate Content
+        </button>
+      </div>
+    </div>
+
+    <!-- CANVA MODE -->
+    <div class="mode-panel card" id="panel-canva">
+      <div class="card-header canva-header">
+        <h2>🎨 Canva Template Fill</h2>
+        <p>Paste your template link — Claude reads it and writes the copy</p>
+      </div>
+      <div class="card-body">
+
+        <div class="field">
+          <label class="canva-label">Canva Template Link</label>
+          <div class="canva-link-box">
+            <span class="canva-link-icon">🔗</span>
+            <input type="url" id="canva-url" class="canva-input"
+              placeholder="https://www.canva.com/design/... or https://canva.link/..."
+              oninput="onCanvaUrlChange()" />
+          </div>
+          <div class="canva-status" id="canva-status"></div>
+        </div>
+
+        <div class="template-preview" id="template-preview">
+          <div class="template-name" id="tpl-name">—</div>
+          <div class="template-meta" id="tpl-meta">—</div>
+          <div class="template-slides" id="tpl-slides"></div>
+        </div>
+
+        <div class="field">
+          <label class="canva-label">What is this template for?</label>
+          <select id="canva-content-type">
+            <option value="carousel">LinkedIn Carousel (slides)</option>
+            <option value="post">LinkedIn Post graphic</option>
+            <option value="story">Instagram / LinkedIn Story</option>
+            <option value="infographic">Infographic</option>
+            <option value="flyer">Event / Webinar Flyer</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="canva-label">Topic for this design</label>
+          <textarea id="canva-topic" placeholder="e.g. 5 signs your organisation is not AI-ready, or AI literacy for HR teams..." rows="3"></textarea>
+        </div>
+
+        <div class="field">
+          <label class="canva-label">Target Audience</label>
+          <select id="canva-audience">
+            <option value="CHROs and HR leaders in India">CHROs &amp; HR Leaders</option>
+            <option value="CEOs and business owners of mid-size Indian companies">CEOs &amp; Business Owners</option>
+            <option value="Data Science and Analytics professionals">Data Science Professionals</option>
+            <option value="L&D and Training Managers in India">L&amp;D / Training Managers</option>
+            <option value="QSR and F&B founders in India">QSR / F&amp;B Founders</option>
+            <option value="Corporate decision makers across India">General Corporate</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="canva-label">Tone</label>
+          <div class="tone-row" id="canva-tone-row">
+            <button class="tone-pill active" data-tone="Direct and insightful" onclick="selectCanvaTone(this)">Direct</button>
+            <button class="tone-pill" data-tone="Educational and practical" onclick="selectCanvaTone(this)">Educational</button>
+            <button class="tone-pill" data-tone="Authoritative and data-driven" onclick="selectCanvaTone(this)">Authoritative</button>
+            <button class="tone-pill" data-tone="Conversational and warm" onclick="selectCanvaTone(this)">Conversational</button>
+          </div>
+        </div>
+
+        <button class="btn-generate btn-canva" id="canva-gen-btn" onclick="generateCanva()">
+          <span>🎨</span> Read Template &amp; Generate Copy
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: OUTPUT -->
+  <div class="card output-card">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('preview', this)">Preview</button>
+      <button class="tab" onclick="switchTab('history', this)">History</button>
+    </div>
+
+    <div class="tab-content active" id="tab-preview">
+      <div id="empty-state" class="empty-state">
+        <div class="empty-icon">✍️</div>
+        <div class="empty-title">Ready to create</div>
+        <div class="empty-desc">Choose a mode on the left, fill in your brief, and hit Generate.<br/>Content appears here instantly.</div>
+      </div>
+
+      <div id="loading-state" class="loading-state" style="display:none">
+        <div class="spinner" id="spinner"></div>
+        <div class="loading-text" id="loading-text">Writing your content...</div>
+      </div>
+
+      <div id="result-state" style="display:none">
+        <div class="output-top">
+          <span class="output-label" id="result-label">Output</span>
+          <div class="output-actions">
+            <button class="btn-action btn-copy" onclick="copyContent()">📋 Copy</button>
+            <button class="btn-action btn-canva-open" id="btn-open-canva" style="display:none" onclick="openCanvaDesign()">🎨 Open in Canva</button>
+            <button class="btn-action" onclick="regenerate()">↻ Regenerate</button>
+          </div>
+        </div>
+
+        <!-- CANVA CTA BANNER -->
+        <div class="canva-cta-banner" id="canva-cta-banner">
+          <div style="font-size:24px">🎨</div>
+          <div class="canva-cta-text">
+            <strong>Copy generated for your Canva template</strong>
+            Paste each slide's text into your Canva design, or open it directly below.
+          </div>
+          <a class="btn-open-canva" id="canva-link-out" href="#" target="_blank">Open Canva →</a>
+        </div>
+
+        <div id="post-preview-wrap">
+          <div class="post-preview">
+            <div class="preview-header">
+              <div class="preview-avatar">SB</div>
+              <div>
+                <div class="preview-name">Subhra Bishnu</div>
+                <div class="preview-title">Co-Founder &amp; Director · OrangeTree Global</div>
+              </div>
+              <div class="linkedin-badge">in</div>
+            </div>
+            <div class="post-content" id="post-content"></div>
+          </div>
+          <div class="char-counter" id="char-counter"></div>
+        </div>
+
+        <div id="carousel-preview-wrap" class="carousel-output" style="display:none"></div>
+
+        <div class="meta-row">
+          <div class="meta-item"><strong>Type:</strong> <span id="meta-type">—</span></div>
+          <div class="meta-item"><strong>Audience:</strong> <span id="meta-audience">—</span></div>
+          <div class="meta-item"><strong>Tone:</strong> <span id="meta-tone">—</span></div>
+          <div class="meta-item" id="meta-canva-wrap" style="display:none"><strong>Source:</strong> <span id="meta-canva">Canva Template</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-history">
+      <div class="history-list" id="history-list">
+        <div class="empty-state">
+          <div class="empty-icon">🕐</div>
+          <div class="empty-title">No history yet</div>
+          <div class="empty-desc">Generated content will appear here.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Copied to clipboard</div>
+
+<script>
+  let selectedType = 'post';
+  let selectedTone = 'Direct and insightful';
+  let selectedCanvaTone = 'Direct and insightful';
+  let lastGenerated = '';
+  let history = [];
+  let lastParams = {};
+  let currentMode = 'write';
+  let canvaDesignUrl = '';
+  let canvaDesignId = '';
+  let isCanvaResult = false;
+
+  const typeLabels = {
+    post: 'LinkedIn Post', carousel: 'Carousel Script', dm: 'Cold DM',
+    article: 'Article Outline', comment: 'Comment Reply', cta: 'CTA / Hook',
+    canva_carousel: 'Canva Carousel Copy', canva_post: 'Canva Post Copy',
+    canva_story: 'Canva Story Copy', canva_infographic: 'Canva Infographic Copy', canva_flyer: 'Canva Flyer Copy'
+  };
+
+  const extraConfig = {
+    dm: { label: "Prospect's Role / Company", placeholder: "e.g. Head of L&D at HDFC, or CEO of a QSR chain in Mumbai" },
+    comment: { label: "The Comment You're Replying To", placeholder: "Paste the comment here..." },
+    article: { label: "Key Points to Cover", placeholder: "e.g. 3 stages of AI maturity, common mistakes..." },
+    carousel: { label: "Number of Slides", placeholder: "e.g. 7 (default)" }
+  };
+
+  function switchMode(mode) {
+    currentMode = mode;
+    document.getElementById('panel-write').classList.toggle('active', mode === 'write');
+    document.getElementById('panel-canva').classList.toggle('active', mode === 'canva');
+    document.getElementById('mode-write').classList.toggle('active', mode === 'write');
+    document.getElementById('mode-canva').classList.toggle('active', mode === 'canva');
+  }
+
+  function selectType(el) {
+    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    selectedType = el.dataset.type;
+    const ef = document.getElementById('extra-field');
+    if (extraConfig[selectedType]) {
+      ef.style.display = 'block';
+      document.getElementById('extra-label').textContent = extraConfig[selectedType].label;
+      document.getElementById('extra').placeholder = extraConfig[selectedType].placeholder;
+    } else { ef.style.display = 'none'; }
+    document.getElementById('target-field').style.display = selectedType === 'comment' ? 'none' : 'block';
+  }
+
+  function selectTone(el) {
+    document.querySelectorAll('#panel-write .tone-pill').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    selectedTone = el.dataset.tone;
+  }
+
+  function selectCanvaTone(el) {
+    document.querySelectorAll('#canva-tone-row .tone-pill').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    selectedCanvaTone = el.dataset.tone;
+  }
+
+  // CANVA URL HANDLING
+  function extractCanvaDesignId(url) {
+    const m = url.match(/canva\.com\/design\/([A-Za-z0-9_-]{11})/);
+    return m ? m[1] : null;
+  }
+
+  function onCanvaUrlChange() {
+    const url = document.getElementById('canva-url').value.trim();
+    const status = document.getElementById('canva-status');
+    const preview = document.getElementById('template-preview');
+
+    if (!url) { status.className = 'canva-status'; preview.classList.remove('show'); return; }
+
+    const id = extractCanvaDesignId(url);
+    if (url.includes('canva.link/')) {
+      status.className = 'canva-status info';
+      status.textContent = '🔗 Shortlink detected — Claude will resolve it when generating';
+      canvaDesignId = ''; canvaDesignUrl = url; preview.classList.remove('show');
+    } else if (id) {
+      canvaDesignId = id; canvaDesignUrl = url;
+      status.className = 'canva-status success';
+      status.textContent = '✓ Valid Canva design link detected (ID: ' + id + ')';
+      showTemplatePreview(id, url);
+    } else if (url.startsWith('https://')) {
+      status.className = 'canva-status error';
+      status.textContent = '⚠️ Paste a Canva design URL (canva.com/design/...) or shortlink (canva.link/...)';
+      canvaDesignId = ''; canvaDesignUrl = ''; preview.classList.remove('show');
+    }
+  }
+
+  function showTemplatePreview(id, url) {
+    const preview = document.getElementById('template-preview');
+    document.getElementById('tpl-name').textContent = '📐 Canva Design (ID: ' + id + ')';
+    document.getElementById('tpl-meta').textContent = 'Claude will read all text blocks and slide structure from this template';
+    document.getElementById('tpl-slides').innerHTML = '<span class="slide-pill">Reading template...</span>';
+    preview.classList.add('show');
+  }
+
+  // BUILD PROMPTS
+  const ctx = `You are writing LinkedIn content for Subhra Bishnu, Co-Founder & Director of OrangeTree Global — a Data Science, Analytics, and AI training and consulting firm founded in 2009, headquartered in Kolkata with offices in Mumbai, Delhi, and Bangalore. OrangeTree serves corporate clients across India and is a recognised authority in building data and AI capability in Indian organisations.`;
+
+  function buildPrompt() {
+    const topic = document.getElementById('topic').value.trim();
+    const audience = document.getElementById('audience').value;
+    const cta = document.getElementById('cta-select').value;
+    const extra = document.getElementById('extra').value.trim();
+
+    if (selectedType === 'post') {
+      return `${ctx}\n\nWrite a LinkedIn post about: "${topic}"\nTarget audience: ${audience}\nTone: ${selectedTone}\n${cta !== 'No explicit CTA' ? 'CTA: ' + cta : 'No CTA.'}\n\nRequirements:\n- Powerful hook first line\n- No corporate jargon\n- Max 3 hashtags\n- 150–300 words\n- First person as Subhra\n- Short paragraphs\n\nOutput post text only.`;
+    }
+    if (selectedType === 'carousel') {
+      const slides = extra ? parseInt(extra) || 7 : 7;
+      return `${ctx}\n\nWrite a LinkedIn carousel script about: "${topic}"\nAudience: ${audience}\nSlides: ${slides}\n\nFormat:\nSLIDE [N]: [TITLE]\n[1-3 punchy lines]\n\nSlide 1 = hook. Last slide = CTA: ${cta}.\n\nOutput slide scripts only.`;
+    }
+    if (selectedType === 'dm') return `${ctx}\n\nWrite a LinkedIn cold DM to: ${extra || 'a senior decision maker'}\nAngle: "${topic}"\nTone: ${selectedTone}\nMax 4 sentences. No pitch. End with a question.\n\nOutput DM only.`;
+    if (selectedType === 'article') return `${ctx}\n\nLinkedIn article outline about: "${topic}"\nAudience: ${audience}\nKey points: ${extra || 'Claude to decide'}\n\nFormat: Headline, Subheadline, Intro, 4-6 sections with bullets, Conclusion with CTA: ${cta}\n\nOutput outline only.`;
+    if (selectedType === 'comment') return `${ctx}\n\nReply to this LinkedIn comment on topic "${topic}":\n"${extra || '[comment not provided]'}"\n\n2-4 sentences. Add value. End with a question.\n\nOutput reply only.`;
+    if (selectedType === 'cta') return `${ctx}\n\nWrite 5 LinkedIn hooks/CTAs for: "${topic}"\nAudience: ${audience}\nTone: ${selectedTone}\n\nFor each:\nHOOK [N]: [opening line]\nCTA [N]: [closing line]\n\nTry: curiosity, data, contrarian, story, direct benefit.\n\nOutput only.`;
+  }
+
+  function buildCanvaPrompt(templateStructure) {
+    const topic = document.getElementById('canva-topic').value.trim();
+    const audience = document.getElementById('canva-audience').value;
+    const contentType = document.getElementById('canva-content-type').value;
+    const tone = selectedCanvaTone;
+
+    return `${ctx}
+
+I have a Canva template with the following structure:
+${templateStructure}
+
+Write copy to fill this Canva ${contentType} template about: "${topic}"
+Target audience: ${audience}
+Tone: ${tone}
+
+Rules:
+- Write copy EXACTLY matching the number of slides/sections in the template above
+- For each text element, write concise, punchy copy that fits a visual design
+- Label each slide/section clearly as: SLIDE [N]: [TITLE] then the body copy
+- Keep text SHORT — these are design text boxes, not paragraphs
+- Slide 1 must be an irresistible hook
+- Last slide must have a strong CTA (DM OrangeTree Global for AI training)
+- Subhra Bishnu / OrangeTree Global context should shine through naturally
+
+Output slide-by-slide copy only. No preamble.`;
+  }
+
+  // GENERATE WRITE MODE
+  async function generate() {
+    const topic = document.getElementById('topic').value.trim();
+    if (!topic) { highlight('topic'); return; }
+
+    isCanvaResult = false;
+    lastParams = { topic, type: selectedType, tone: selectedTone, audience: document.getElementById('audience').value };
+    showLoading(false);
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6', max_tokens: 1000,
+          messages: [{ role: 'user', content: buildPrompt() }]
+        })
+      });
+      const data = await response.json();
+      const text = data.content?.[0]?.text || 'Error. Please try again.';
+      lastGenerated = text;
+      showResult(text, false);
+      addToHistory(text, false);
+    } catch(e) { showResult('Connection error. Please try again.', false); }
+  }
+
+  // GENERATE CANVA MODE
+  async function generateCanva() {
+    const url = document.getElementById('canva-url').value.trim();
+    const topic = document.getElementById('canva-topic').value.trim();
+
+    if (!url) { highlight('canva-url'); return; }
+    if (!topic) { highlight('canva-topic'); return; }
+
+    isCanvaResult = true;
+    canvaDesignUrl = url;
+    showLoading(true);
+
+    // Step 1: Ask Claude to read the Canva template via MCP, then generate copy
+    const systemPrompt = `You are a LinkedIn content specialist for OrangeTree Global. When given a Canva template URL, you will:
+1. Use the Canva MCP to read the template structure and text elements
+2. Generate LinkedIn-ready copy that fits each slide/section
+3. Return the copy in a structured SLIDE N: format`;
+
+    const userMsg = `Please read this Canva template: ${url}
+
+Then generate copy for it with these details:
+- Topic: ${topic}
+- Audience: ${document.getElementById('canva-audience').value}
+- Content type: ${document.getElementById('canva-content-type').value}
+- Tone: ${selectedCanvaTone}
+
+Context: This is for Subhra Bishnu, Co-Founder of OrangeTree Global, a Data Science and AI training firm in India.
+
+Steps:
+1. Use the Canva tool to read the template's text structure
+2. Count the slides/sections
+3. Generate copy for each slide that is punchy, visual-design-friendly, and LinkedIn-optimised
+4. Format output as:
+SLIDE [N]: [SLIDE TITLE]
+[Copy for that slide — keep it short, 1-3 lines max]
+
+Output the slide copy only.`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1000,
+          system: systemPrompt,
+          mcp_servers: [{ type: 'url', url: 'https://mcp.canva.com/mcp', name: 'canva' }],
+          messages: [{ role: 'user', content: userMsg }]
+        })
+      });
+
+      const data = await response.json();
+
+      // Extract text from content blocks (may include mcp_tool_use blocks)
+      let text = '';
+      if (data.content && Array.isArray(data.content)) {
+        text = data.content
+          .filter(b => b.type === 'text')
+          .map(b => b.text)
+          .join('\n')
+          .trim();
+      }
+      if (!text) text = 'Could not read the template. Please ensure the Canva link is shared publicly or you are logged into Canva.';
+
+      lastGenerated = text;
+      showResult(text, true);
+      addToHistory(text, true);
+
+    } catch(e) {
+      showResult('Connection error. Please check your internet and try again.', true);
+    }
+  }
+
+  function highlight(id) {
+    const el = document.getElementById(id);
+    el.focus(); el.style.borderColor = '#ef4444';
+    setTimeout(() => el.style.borderColor = '', 2000);
+  }
+
+  function showLoading(isCanva) {
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('result-state').style.display = 'none';
+    document.getElementById('loading-state').style.display = 'block';
+    document.getElementById('spinner').className = 'spinner' + (isCanva ? ' purple' : '');
+
+    const msgs = isCanva
+      ? ['Reading your Canva template...', 'Analysing slide structure...', 'Writing copy for each slide...', 'Fitting content to your design...']
+      : ['Crafting your content...', 'Thinking like a thought leader...', 'Writing for your audience...', 'Adding the finishing touches...'];
+
+    let i = 0;
+    const el = document.getElementById('loading-text');
+    el.textContent = msgs[0];
+    window._loadInterval = setInterval(() => { i = (i + 1) % msgs.length; el.textContent = msgs[i]; }, 1800);
+  }
+
+  function showResult(text, isCanva) {
+    clearInterval(window._loadInterval);
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('result-state').style.display = 'block';
+
+    const typeKey = isCanva ? 'canva_' + document.getElementById('canva-content-type').value : selectedType;
+    document.getElementById('result-label').textContent = typeLabels[typeKey] || 'Output';
+    document.getElementById('meta-type').textContent = typeLabels[typeKey] || selectedType;
+    document.getElementById('meta-audience').textContent = isCanva
+      ? document.getElementById('canva-audience').value.split(' ')[0] + '...'
+      : document.getElementById('audience').value.split(' ')[0] + '...';
+    document.getElementById('meta-tone').textContent = isCanva
+      ? selectedCanvaTone.split(' ')[0]
+      : selectedTone.split(' ')[0];
+
+    // Canva CTA banner
+    const banner = document.getElementById('canva-cta-banner');
+    const openBtn = document.getElementById('btn-open-canva');
+    const metaCanva = document.getElementById('meta-canva-wrap');
+    if (isCanva && canvaDesignUrl) {
+      banner.classList.add('show');
+      document.getElementById('canva-link-out').href = canvaDesignUrl;
+      openBtn.style.display = 'inline-flex';
+      metaCanva.style.display = 'block';
+    } else {
+      banner.classList.remove('show');
+      openBtn.style.display = 'none';
+      metaCanva.style.display = 'none';
+    }
+
+    const postWrap = document.getElementById('post-preview-wrap');
+    const carouselWrap = document.getElementById('carousel-preview-wrap');
+    const isCarousel = selectedType === 'carousel' || isCanva;
+
+    if (isCarousel && text.includes('SLIDE')) {
+      postWrap.style.display = 'none';
+      carouselWrap.style.display = 'block';
+      renderCarousel(text, carouselWrap, isCanva);
+    } else {
+      postWrap.style.display = 'block';
+      carouselWrap.style.display = 'none';
+      document.getElementById('post-content').textContent = text;
+      updateCharCounter(text);
+    }
+  }
+
+  function renderCarousel(text, wrap, isCanva) {
+    wrap.innerHTML = '';
+    const lines = text.split('\n');
+    let currentSlide = null, currentContent = [], slideNum = 0;
+
+    lines.forEach(line => {
+      if (line.match(/^SLIDE \d+:/i)) {
+        if (currentSlide !== null) wrap.appendChild(makeSlide(++slideNum, currentSlide, currentContent.join('\n').trim(), isCanva));
+        currentSlide = line.replace(/^SLIDE \d+:\s*/i, '').trim();
+        currentContent = [];
+      } else if (line.trim()) { currentContent.push(line); }
+    });
+    if (currentSlide !== null) wrap.appendChild(makeSlide(++slideNum, currentSlide, currentContent.join('\n').trim(), isCanva));
+    if (wrap.children.length === 0) {
+      wrap.innerHTML = `<div style="padding:16px;white-space:pre-wrap;font-size:13px;line-height:1.7">${text}</div>`;
+    }
+  }
+
+  function makeSlide(n, title, content, isCanva) {
+    const div = document.createElement('div');
+    div.className = 'slide' + (isCanva ? ' canva-slide' : '');
+    div.innerHTML = `<div class="slide-num ${isCanva ? 'purple' : ''}">Slide ${n}</div><div class="slide-text"><strong>${title}</strong>${content ? '\n\n' + content : ''}</div>`;
+    return div;
+  }
+
+  function updateCharCounter(text) {
+    const len = text.length;
+    const el = document.getElementById('char-counter');
+    el.className = 'char-counter' + (len > 3000 ? ' over' : len > 2000 ? ' warn' : '');
+    el.textContent = `${len} characters · LinkedIn optimal: under 1,300 for feed posts`;
+  }
+
+  function addToHistory(text, isCanva) {
+    const topic = isCanva ? document.getElementById('canva-topic').value.trim() : document.getElementById('topic').value.trim();
+    history.unshift({ topic, type: isCanva ? 'canva_carousel' : selectedType, text, isCanva, time: new Date(), canvaUrl: canvaDesignUrl });
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('history-list');
+    if (!history.length) return;
+    list.innerHTML = history.slice(0, 10).map((h, i) => `
+      <div class="history-item ${h.isCanva ? 'canva-item' : ''}" onclick="loadHistory(${i})">
+        <div class="history-topic">${h.isCanva ? '🎨 ' : ''}${h.topic.substring(0,55)}${h.topic.length>55?'...':''}</div>
+        <div class="history-meta">${typeLabels[h.type] || h.type} · ${h.time.toLocaleTimeString()}</div>
+      </div>`).join('');
+  }
+
+  function loadHistory(i) {
+    const h = history[i];
+    lastGenerated = h.text; isCanvaResult = h.isCanva;
+    if (h.canvaUrl) canvaDesignUrl = h.canvaUrl;
+    showResult(h.text, h.isCanva);
+    document.querySelectorAll('.tab')[0].click();
+  }
+
+  function regenerate() { if (currentMode === 'canva') generateCanva(); else if (Object.keys(lastParams).length) generate(); }
+
+  function openCanvaDesign() { if (canvaDesignUrl) window.open(canvaDesignUrl, '_blank'); }
+
+  function switchTab(tab, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
+
+  function copyContent() {
+    if (!lastGenerated) return;
+    navigator.clipboard.writeText(lastGenerated).then(() => {
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    });
+  }
+</script>
+</body>
+</html>
